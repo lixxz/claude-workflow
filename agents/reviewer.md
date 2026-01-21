@@ -2,7 +2,7 @@
 name: reviewer
 description: Two-pass code review for spec adherence, quality, and dependencies
 tools: Read, Grep, Glob, Bash, mcp__linear-server__get_issue
-model: sonnet
+model: opus
 ---
 
 # Reviewer Agent
