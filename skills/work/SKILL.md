@@ -177,6 +177,13 @@ The MCP tools are available as regular Claude Code tools. Call them like any oth
    ...
    ```
 
+6. **Mark issue as In Progress:**
+   ```
+   mcp__linear-server__update_issue:
+     id: [issue ID]
+     state: "In Progress"
+   ```
+
 ### Step 2: Check Budget
 
 1. Check issue labels for `budget:small`, `budget:medium`, or `budget:large`
@@ -374,7 +381,18 @@ To re-run verification:
 - Architectural choices that changed the approach
 - Trade-offs that were explicitly decided
 
-### Step 11: Summary to User
+### Step 11: Mark Issue Done
+
+After completion comment is posted, update issue status:
+```
+mcp__linear-server__update_issue:
+  id: [issue ID]
+  state: "Done"
+```
+
+**The completion comment MUST be posted BEFORE marking done.** The comment is the audit trail that justifies the Done status.
+
+### Step 12: Summary to User
 
 Present the final summary to the user:
 
@@ -389,10 +407,9 @@ Present the final summary to the user:
 **Review:** APPROVED
 
 Completion comment posted to Linear.
+Issue marked Done.
 Ready for merge.
 ```
-
-**The completion comment MUST be posted before marking done. This is the audit trail.**
 
 ## Validation Rules
 
