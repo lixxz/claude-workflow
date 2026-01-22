@@ -116,13 +116,35 @@ The MCP tools are available as regular Claude Code tools. Call them like any oth
 1. Fetch issue by calling the `mcp__linear-server__get_issue` tool with `id: "$ARGUMENTS"` (the issue ID passed to /work)
 2. Parse the description and validate required sections:
    - **Want** (required): 1-2 sentences describing outcome
+   - **Repo** (required): Which repository this work belongs to
    - **Done When** (required): Gherkin scenarios in ```gherkin block
    - **Approach** (required): Can be "TBD" if agent should propose
    - **Decisions** (optional): Updated during implementation
 
 3. **If validation fails**: STOP and report exactly what's missing. Do not proceed.
 
-4. Extract and display Gherkin scenarios:
+4. **Validate current repository matches the Repo field:**
+   ```bash
+   # Get current repo name
+   basename $(git rev-parse --show-toplevel)
+   # Or for full path comparison
+   git rev-parse --show-toplevel
+   ```
+
+   - If repo matches: proceed
+   - If repo does NOT match: STOP and report:
+     ```
+     ⚠️ Repository mismatch
+
+     This Work Unit is for: [repo from issue]
+     Current directory is: [current repo]
+
+     Please run `/work [issue-id]` from the correct repository.
+     ```
+
+   **Do not proceed if in the wrong repository.**
+
+5. Extract and display Gherkin scenarios:
    ```
    Found N scenarios:
    1. [Scenario name]
@@ -328,6 +350,7 @@ Ready for merge.
 | Section | Required | Validation |
 |---------|----------|------------|
 | Want | Yes | Non-empty, < 50 words |
+| Repo | Yes | Non-empty, must match current working directory |
 | Done When | Yes | Contains valid Gherkin (Given/When/Then) |
 | Approach | Yes | Non-empty (can be "TBD") |
 | Proof label | Yes | Exactly one of: proof:tdd, proof:dbt-test, proof:rn-component, proof:infra-runbook |
@@ -337,6 +360,7 @@ Ready for merge.
 
 - **Missing section**: Report which section is missing, do not proceed
 - **Invalid Gherkin**: Report parsing error, do not proceed
+- **Repo mismatch**: Report expected vs actual repo, do not proceed
 - **Tests pass before implementation**: Report as error, scenarios may not be testing new behavior
 - **Budget exceeded**: Report actual vs allowed, require split or justification
 - **MCP failure**: Report error, do not claim success

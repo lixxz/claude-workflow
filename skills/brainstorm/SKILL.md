@@ -223,19 +223,28 @@ Every line of code is a liability. The best solution is often no new code at all
 For each approved Outcome:
 
 1. Explore codebase to understand technical scope
-2. Propose Work Units (one per bounded context/repo):
+2. Propose Work Units (one per repo — if feature spans repos, create separate linked WUs):
    ```
    ## Outcome: [name]
 
    Work Units:
    1. WU: [title]
-      - Repo/area: [e.g., Django API, React Native, dbt]
+      - Repo: [exact repo name, e.g., bhume-platform, bhume-mobile]
       - Proof type: [tdd/rn-component/dbt-test/infra-runbook]
       - Budget estimate: [small/medium/large]
       - Key scenarios (draft):
         - [scenario 1]
         - [scenario 2]
+
+   2. WU: [title] (if multi-repo)
+      - Repo: [different repo]
+      - Blocked by: WU-1 (if dependent)
+      ...
    ```
+
+   **Multi-repo features:** Create separate Work Units for each repo with explicit dependencies.
+   Example: API change (backend repo) → Mobile integration (mobile repo, blocked by API WU)
+
 3. Get user approval on breakdown
 
 ### Phase 4.5: Map Dependencies
@@ -328,6 +337,9 @@ After all Work Units are approved, identify execution order:
      description: |
        ## Want
        [1-2 sentences]
+
+       ## Repo
+       [exact repo name, e.g., bhume-platform]
 
        ## Done When
        ```gherkin

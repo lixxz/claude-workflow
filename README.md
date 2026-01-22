@@ -208,6 +208,9 @@ ln -sf ~/Code/claude-workflow/agents/reviewer.md ~/.claude/agents/reviewer.md
 ## Want
 [1-2 sentences: what outcome, not how]
 
+## Repo
+[exact repo name, e.g., bhume-platform]
+
 ## Done When
 ```gherkin
 Scenario: [Clear behavior description]
@@ -222,6 +225,9 @@ TBD - agent proposes during /work
 ## Decisions
 <!-- Added during implementation -->
 ```
+
+**Multi-repo features:** Create separate Work Units for each repo with dependencies.
+Example: `BHU-100: API endpoint` (backend) → `BHU-101: Mobile integration` (mobile, blocked by BHU-100)
 
 ---
 
