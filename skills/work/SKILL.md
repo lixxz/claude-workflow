@@ -197,7 +197,50 @@ Based on proof type label:
 
 2. Call the `mcp__linear-server__update_issue` tool with the issue `id` and updated `description`
 
-### Step 8: Run Reviewer
+### Step 8: Compile Execution Evidence
+
+**CRITICAL: This step ensures verifiability. Do not skip or summarize.**
+
+Before proceeding to review, compile evidence that each scenario was actually tested:
+
+```markdown
+## Execution Evidence
+
+### Scenario 1: [Scenario name from Gherkin]
+**Verified by:**
+```bash
+[exact command that was run]
+```
+**Output:**
+```
+[verbatim output - copy/paste, not paraphrased]
+```
+**Exit code:** [actual exit code]
+**Result:** PASS / FAIL
+
+### Scenario 2: [Scenario name]
+**Verified by:**
+```bash
+[exact command]
+```
+**Output:**
+```
+[verbatim output]
+```
+**Exit code:** [code]
+**Result:** PASS / FAIL
+```
+
+**Rules:**
+- Every Gherkin scenario MUST have a corresponding evidence entry
+- Output MUST be verbatim (copy-paste from terminal), never paraphrased or summarized
+- If a scenario was NOT actually tested, mark as `**Result:** NOT EXECUTED` — this blocks completion
+- Include the actual exit code from the command
+- Human can re-run any command to verify the claim
+
+**If any scenario lacks evidence or shows NOT EXECUTED:** STOP. Do not proceed to reviewer.
+
+### Step 9: Run Reviewer
 
 1. Launch the `reviewer` agent with the issue ID
 2. Wait for review verdict:
@@ -207,20 +250,53 @@ Based on proof type label:
 
 3. Max 3 review iterations. If still failing, escalate to human.
 
-### Step 9: Summary
+### Step 10: Summary
 
-Report:
-```
+Present the final summary with embedded evidence:
+
+```markdown
 ## Work Unit Complete
 
-Issue: [ID] - [Title]
-Scenarios: N/N passing
-Lines changed: X (budget: Y)
-Decisions logged: N
-Review: APPROVED (pass 1: ✓, pass 2: ✓)
+**Issue:** [ID] - [Title]
+**Scenarios:** N/N passing
+**Lines changed:** X (budget: Y)
+**Decisions logged:** N
+**Review:** APPROVED
+
+---
+
+### Execution Evidence
+
+#### Scenario 1: [name]
+```bash
+[command]
+```
+```
+[output snippet - first/last few lines if long]
+```
+Exit: 0 ✓
+
+#### Scenario 2: [name]
+```bash
+[command]
+```
+```
+[output snippet]
+```
+Exit: 0 ✓
+
+---
+
+### Verify Any Claim
+To re-run verification:
+```bash
+[main test command that covers all scenarios]
+```
 
 Ready for merge.
 ```
+
+**The summary MUST include execution evidence. A summary without evidence is incomplete.**
 
 ## Validation Rules
 
