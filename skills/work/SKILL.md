@@ -250,9 +250,62 @@ Before proceeding to review, compile evidence that each scenario was actually te
 
 3. Max 3 review iterations. If still failing, escalate to human.
 
-### Step 10: Summary
+### Step 10: Post Completion Comment
 
-Present the final summary with embedded evidence:
+Post a completion comment to the Linear issue using `mcp__linear-server__create_comment`.
+
+This comment serves as the permanent record of execution evidence and learnings.
+
+```markdown
+## Completion Summary
+
+**Commit:** [hash] [message]
+**Files changed:** [count]
+**Lines:** +[added] -[removed]
+
+### Execution Evidence
+
+| Scenario | Command | Exit | Result |
+|----------|---------|------|--------|
+| [Scenario 1 name] | `[cmd]` | 0 | ✓ |
+| [Scenario 2 name] | `[cmd]` | 0 | ✓ |
+
+<details>
+<summary>Full verification output</summary>
+
+```
+[verbatim output from test run]
+```
+
+</details>
+
+### Learnings
+
+- [Discovery 1 - things learned during implementation]
+- [Discovery 2 - gotchas for future reference]
+- [Discovery 3 - context that helps understand the work]
+
+### Verify
+
+To re-run verification:
+```bash
+[main test command]
+```
+```
+
+**What goes in Learnings:**
+- Unexpected behaviors discovered ("Datastream prefixes tables with `public_`")
+- Environment/setup gotchas ("Need ADC credentials, not service account")
+- Context for future work ("Only X is currently configured")
+- Performance observations ("Query takes ~2s for 10k rows")
+
+**What does NOT go in Learnings (goes in Decisions section instead):**
+- Architectural choices that changed the approach
+- Trade-offs that were explicitly decided
+
+### Step 11: Summary to User
+
+Present the final summary to the user:
 
 ```markdown
 ## Work Unit Complete
@@ -261,42 +314,14 @@ Present the final summary with embedded evidence:
 **Scenarios:** N/N passing
 **Lines changed:** X (budget: Y)
 **Decisions logged:** N
+**Learnings posted:** Y
 **Review:** APPROVED
 
----
-
-### Execution Evidence
-
-#### Scenario 1: [name]
-```bash
-[command]
-```
-```
-[output snippet - first/last few lines if long]
-```
-Exit: 0 ✓
-
-#### Scenario 2: [name]
-```bash
-[command]
-```
-```
-[output snippet]
-```
-Exit: 0 ✓
-
----
-
-### Verify Any Claim
-To re-run verification:
-```bash
-[main test command that covers all scenarios]
-```
-
+Completion comment posted to Linear.
 Ready for merge.
 ```
 
-**The summary MUST include execution evidence. A summary without evidence is incomplete.**
+**The completion comment MUST be posted before marking done. This is the audit trail.**
 
 ## Validation Rules
 
