@@ -1,7 +1,7 @@
 ---
 name: work
 description: Execute a Linear Work Unit issue with disciplined TDD workflow
-allowed-tools: Read, Grep, Glob, Edit, Write, Bash, mcp__linear-server__get_issue, mcp__linear-server__update_issue, mcp__linear-server__create_comment
+allowed-tools: Read, Grep, Glob, Edit, Write, Bash, mcp__linear-server__get_issue, mcp__linear-server__update_issue, mcp__linear-server__create_comment, mcp__linear-server__list_comments
 ---
 
 # Work Unit Execution
@@ -24,6 +24,31 @@ Language-specific rules are also defined:
 - ⚛️ React Native: Functional components, hooks for logic, discriminated unions
 
 **All code written during implementation MUST follow these standards.**
+
+## File Creation Rules
+
+**NEVER create documentation or markdown files in the code repository.**
+
+This includes:
+- Verification runbooks
+- README files
+- Design documents
+- Checklists
+- Any `.md` files
+
+**Why:** Linear is the source of truth. Documentation in repos drifts from Linear and clutters the codebase.
+
+**Where state goes instead:**
+
+| Information | Location |
+|-------------|----------|
+| Verification steps | Linear issue "Done When" (Gherkin) |
+| Progress tracking | Linear comments (create/update as you work) |
+| Execution evidence | Completion comment (Step 10) |
+| Decisions | Issue description "Decisions" section |
+| Learnings | Completion comment |
+
+**Only create files that are actual code artifacts** (source code, tests, migrations, config files).
 
 ## Usage
 ```
@@ -191,8 +216,32 @@ Based on proof type label:
 3. Run `dbt test --select <model>` — tests MUST FAIL
 
 **proof:infra-runbook**:
-1. Document expected state from Gherkin as checklist
-2. No automated RED phase — proceed to implementation
+1. Parse Gherkin scenarios as verification checklist (keep in memory, NOT as a file in repo)
+2. Post initial progress comment to Linear issue (save the comment ID):
+   ```markdown
+   ## Verification Progress
+
+   | # | Scenario | Status |
+   |---|----------|--------|
+   | 1 | [Scenario name] | ⬜ Pending |
+   | 2 | [Scenario name] | ⬜ Pending |
+
+   *Will reply to this thread with updates.*
+   ```
+3. No automated RED phase — proceed to implementation
+4. **As you work:** Reply to the progress comment thread (use `parentId`) with updates:
+   ```markdown
+   **Scenario 1: [name]** ✅
+
+   ```bash
+   [command run]
+   ```
+   ```
+   [verbatim output snippet]
+   ```
+   ```
+5. **To check current state:** Read comments via `mcp__linear-server__list_comments` and find the progress thread
+6. Post final summary reply when all scenarios verified, before proceeding to Step 8
 
 ### Step 5: Implement (GREEN)
 
