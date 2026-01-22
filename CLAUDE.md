@@ -84,51 +84,7 @@ Actual fix: Check user.profile, not just user
 
 ---
 
-## Part II: Code Review Protocol
-
-### When to Request Review
-
-Delegate to the `reviewer` agent for **significant changes** only:
-
-| Change Type | Review Required? |
-|-------------|------------------|
-| New feature (new files, new functionality) | **YES** |
-| Refactor (restructuring existing code) | **YES** |
-| Multi-file changes (3+ files) | **YES** |
-| Bug fix (single file, clear scope) | No |
-| Config changes | No |
-| Documentation only | No |
-| Trivial edits (typos, formatting) | No |
-
-### How to Request Review
-
-When delegating to `reviewer`, provide:
-
-```
-1. ORIGINAL REQUEST: [What the user asked for]
-2. CHANGED FILES: [List of files modified with brief description]
-3. APPROACH: [Why you implemented it this way]
-4. CONCERNS: [Any areas you're uncertain about]
-```
-
-### Handling Review Results
-
-| Result | Action |
-|--------|--------|
-| `APPROVED` | Proceed to mark task complete |
-| `NEEDS CHANGES` with HIGH issues | Fix before completing |
-| `NEEDS CHANGES` with only MED/LOW | Fix or note to user, then complete |
-
-### Review is NOT Required When
-
-- You're just exploring/researching (no code changes)
-- Changes are mechanical (renames via LSP, import sorting)
-- User explicitly says "quick fix" or "don't review"
-- You're iterating on reviewer feedback (don't re-review the review fixes)
-
----
-
-## Part III: React Native / TypeScript ⚛️
+## Part II: React Native / TypeScript ⚛️
 
 ### Foundational Philosophies
 
@@ -320,7 +276,7 @@ const count = items.length;
 
 ---
 
-## Part IV: Python/Django Philosophies & Rules 🐍
+## Part III: Python/Django Philosophies & Rules 🐍
 
 ### Foundational Philosophies
 
@@ -424,7 +380,7 @@ The Database is the source of truth, not Python.
 
 ---
 
-## Part V: Python/Django Examples & Practices 🐍
+## Part IV: Python/Django Examples & Practices 🐍
 
 ### Code Examples
 
