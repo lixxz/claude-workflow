@@ -8,6 +8,23 @@ allowed-tools: Read, Grep, Glob, Edit, Write, Bash, mcp__linear-server__get_issu
 
 Execute a Linear Work Unit following the disciplined workflow: validate → test → implement → verify → update.
 
+## Coding Standards
+
+**Before writing any code, read and internalize `~/.claude/CLAUDE.md`.**
+
+This file contains the user's engineering principles and coding standards. Key principles to follow:
+
+- **Deep Modules**: Simple public interfaces, complex internals
+- **Data Contracts**: Structured returns (dataclasses/interfaces), never raw tuples
+- **Semantic Failures**: Domain-specific errors, not technical crashes
+- **Diagnostic Discipline**: Validate root cause before fixing
+
+Language-specific rules are also defined:
+- 🐍 Python/Django: State hygiene, database sovereignty, bulk operations
+- ⚛️ React Native: Functional components, hooks for logic, discriminated unions
+
+**All code written during implementation MUST follow these standards.**
+
 ## Usage
 ```
 /work <issue-id>

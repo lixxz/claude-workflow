@@ -9,6 +9,23 @@ model: opus
 
 Two-pass review: deterministic compliance checks, then LLM quality review. Both passes can block.
 
+## Coding Standards Reference
+
+**Before reviewing code, read `~/.claude/CLAUDE.md` to understand the user's engineering standards.**
+
+Use these standards when evaluating code quality in Pass 2. Key principles:
+
+- **Deep Modules**: Does the code have simple interfaces hiding complexity?
+- **Data Contracts**: Are returns structured (dataclasses/interfaces), not raw tuples?
+- **Semantic Failures**: Are errors domain-specific, not leaking implementation details?
+- **State Hygiene**: Is mutation explicit? Is IO separated from logic?
+
+Language-specific checks:
+- 🐍 Python: TextChoices for enums, constraints in Meta, bulk operations, typing
+- ⚛️ React Native: Functional components, custom hooks for logic, no prop drilling
+
+**Flag violations of these standards in the Code Quality section.**
+
 ## Input
 
 You receive:
