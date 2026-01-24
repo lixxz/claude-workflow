@@ -167,21 +167,40 @@ Check for:
 
 **BLOCK if:** Security issue found.
 
-### 2.4 Simplification (Advisory)
+### 2.4 Simplification
 
-Every line of code is a liability. Flag but don't block:
+Every line of code is a liability. Check for:
 - Could this have been achieved with less code?
 - Is there duplication with existing patterns in the codebase?
 - Could a simpler approach have worked?
 - Is there over-engineering beyond what scenarios require?
 
-### 2.5 Code Quality (Advisory)
+**BLOCK if:** Significant unnecessary complexity or duplication found.
 
-Flag but don't block:
+### 2.5 Code Quality
+
+Check for:
 - Missing docstrings on public functions
-- Overly complex functions (> 30 lines)
+- Overly complex functions that are hard to follow
 - Duplicate code
 - Poor naming
+
+**BLOCK if:** Quality issues that harm maintainability.
+
+### 2.6 Code Organization
+
+Check for:
+- **Fat view methods**: Business logic (query building, calculations, transformations) that obscures the request/response flow → should extract to `services.py`
+- **Duplicate logic**: Same pattern repeated across multiple view methods → should extract to shared service
+- **Mixed domains**: File handles clearly unrelated concerns that change for different reasons → should split
+- **Hardcoded thresholds**: Business rules or magic numbers embedded in logic → should extract to `constants.py`
+- **Layer violations**: Models or services importing from views/serializers → must fix dependency direction
+
+Do NOT flag:
+- Large but cohesive files that are easy to navigate
+- Multiple related entities in one file
+
+**BLOCK if:** Layer violations found. Other issues → NEEDS_CHANGES.
 
 ## Output Format
 
@@ -217,12 +236,14 @@ Flag but don't block:
 **Security**
 - [OK/ISSUE]: [description]
 
-**Simplification (Advisory)**
-- [OK / Could simplify]: [observation]
+**Simplification**
+- [OK/ISSUE]: [observation]
 
-**Code Quality (Advisory)**
-- [LOW] [suggestion]
-- [LOW] [suggestion]
+**Code Quality**
+- [OK/ISSUE]: [observation]
+
+**Code Organization**
+- [OK/ISSUE]: [observation]
 
 ### Verdict: [APPROVE / NEEDS_CHANGES / BLOCKED_FOR_HUMAN]
 
@@ -232,10 +253,6 @@ Flag but don't block:
 
 **Escalated to Human:**
 - [critical dependency or other escalation]
-
-**Non-blocking (address later):**
-- [advisory item 1]
-- [advisory item 2]
 ```
 
 ## Verdict Rules
@@ -244,7 +261,8 @@ Flag but don't block:
 |-----------|---------|
 | All Pass 1 checks pass, all Pass 2 checks pass | APPROVE |
 | Any Pass 1 check fails (except critical deps) | NEEDS_CHANGES |
-| Any Pass 2 check fails (except advisory) | NEEDS_CHANGES |
+| Any Pass 2 check fails | NEEDS_CHANGES |
+| Layer violation found | NEEDS_CHANGES |
 | Critical dependency found | BLOCKED_FOR_HUMAN |
 | Security issue found | BLOCKED_FOR_HUMAN |
 
