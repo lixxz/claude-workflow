@@ -260,7 +260,7 @@ List what was created:
 
 **Key learnings for implementation:**
 1. HTML must be preprocessed to flatten nested tables
-2. Vertex AI gemini-1.5-flash is sufficient (no need for pro)
+2. Vertex AI gemini-2.5-flash is sufficient (no need for pro)
 3. Batch requests in groups of 10 for cost efficiency
 4. Expected cost at scale: ~$X/month for Y rows
 

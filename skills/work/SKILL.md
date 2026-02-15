@@ -211,7 +211,7 @@ The MCP tools are available as regular Claude Code tools. Call them like any oth
    - `medium`: 200-400 LOC (requires justification in commit)
    - `large`: > 400 LOC (requires human approval before starting)
 
-3. **If `budget:large`**: STOP and ask human for approval before proceeding.
+3. **If `budget:large`**: **HARD STOP**: End your message here after reporting the budget. Do NOT call any more tools or proceed. Wait for the user to explicitly approve before continuing.
 
 ### Step 3: Validate and Confirm Approach
 
@@ -285,8 +285,8 @@ The approach may have been written during brainstorm before dependencies were co
 
 **If Approach is "TBD":**
 1. Using dependency context + codebase exploration, propose approach in 1 paragraph
-2. Wait for human approval
-3. Once approved, update issue Approach section via MCP
+2. **HARD STOP**: End your message here. Do NOT call any more tools, do NOT proceed to Step 4, do NOT update the issue. Wait for the user to explicitly approve or revise the approach.
+3. Once user approves, update issue Approach section via MCP, then proceed to Step 4.
 
 **If Approach exists (not TBD):**
 
@@ -317,8 +317,8 @@ Check for invalidation signals:
    **Proposed revised approach:**
    [new approach in 1 paragraph]
    ```
-2. Wait for human approval
-3. Once approved, update issue Approach section via MCP
+2. **HARD STOP**: End your message here. Do NOT call any more tools, do NOT proceed to Step 4, do NOT update the issue. Wait for the user to explicitly approve or revise the approach.
+3. Once user approves, update issue Approach section via MCP, then proceed to Step 4.
 
 **If no invalidation signals:**
 1. Confirm approach is still valid:
