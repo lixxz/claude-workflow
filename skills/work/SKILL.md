@@ -336,18 +336,39 @@ Check for invalidation signals:
 
 ### Step 4: Generate Tests (RED)
 
+#### Testing Principle: Test Real Behavior, Mock Only at System Boundaries
+
+Tests must verify that the **system actually works**, not that mocked internals return expected values. A mock-heavy test can pass while the real system is broken — that's worse than no test.
+
+**Default to integration tests** that exercise the real interface (API endpoint, component render, SQL query). Only mock things you don't control:
+
+| Mock this (system boundaries) | Do NOT mock this (internals) |
+|-------------------------------|------------------------------|
+| External APIs (payment gateways, third-party services) | ORM / database queries / model methods |
+| Async task dispatch (Celery `.delay()`, job queues) | View logic / serializers / middleware |
+| Network I/O (HTTP calls, email, push notifications) | Component state / hooks / rendering |
+| Native modules (camera, GPS, filesystem) | Business logic / access control |
+| Time (`now()`) when testing time-dependent logic | Internal function calls within the same app |
+
+**The test:** if you can delete the `@patch` decorator and the test still makes sense (just slower or needs a real service), it should probably not be mocked. If removing the mock would call a payment gateway or send a push notification, keep the mock.
+
 Based on proof type label:
 
 **proof:tdd** (Python/Django):
-1. Create pytest-bdd feature file from Gherkin
-2. Create test file with step definitions
-3. Run `pytest <test_file> --collect-only` to validate syntax
-4. Run `pytest <test_file>` — tests MUST FAIL (RED)
-5. If tests pass before implementation → STOP, scenarios may be wrong
+1. Write integration tests that call real API endpoints via the test client (`self.client.get/post`)
+2. Create real DB records in `setUp` — users, models, related objects
+3. Use real authentication (`force_authenticate` or `AccessToken.for_user()`)
+4. Assert on: HTTP status codes, response field values, **DB state changes** (`obj.refresh_from_db()`)
+5. Mock only: payment gateways, Celery task dispatch, external API calls
+6. Run tests — they MUST FAIL (RED)
+7. If tests pass before implementation → STOP, scenarios may be wrong
 
 **proof:rn-component** (React Native):
-1. Create Jest test file with describe/it blocks from scenarios
-2. Run `npm test -- <test_file>` — tests MUST FAIL
+1. Write integration tests that render real component trees (`render(<Screen />)`)
+2. Use real hooks, real state, real context providers
+3. Mock only: native modules, network requests (prefer MSW over manual mocks), navigation
+4. Assert on: rendered output, user interaction results, state transitions
+5. Run `npm test -- <test_file>` — tests MUST FAIL
 
 **proof:dbt-test** (dbt):
 1. Create/update schema.yml with tests matching scenarios

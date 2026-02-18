@@ -110,8 +110,13 @@ For each Gherkin scenario:
 1. Read the corresponding test
 2. Verify the test actually tests what the scenario describes
 3. Check Given/When/Then maps to test setup/action/assertion
+4. **Check for over-mocking:** Tests should exercise real behavior, not mocked internals. Flag if:
+   - `@patch` targets internal functions in the same app (e.g., patching a service function called by a view in the same Django app, or mocking a custom hook used by a component in the same module)
+   - Test creates mocked return values instead of real DB records / real component state
+   - Test asserts on mock call counts instead of actual system state changes
+   - Acceptable mocks: external APIs, payment gateways, async task dispatch, native modules, network I/O
 
-**BLOCK if:** Test doesn't actually verify the scenario intent.
+**BLOCK if:** Test doesn't actually verify the scenario intent, or test over-mocks internals making it possible to pass while the real system is broken.
 
 ### 2.2 Scope Creep
 
