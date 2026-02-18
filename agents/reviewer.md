@@ -26,15 +26,20 @@ Language-specific checks:
 
 **Flag violations of these standards in the Code Quality section.**
 
+## Important
+
+**You MUST be run in the foreground (NOT in the background).** Background execution hangs because Bash tool approvals require interactive user input.
+
 ## Input
 
 You receive:
 - `issue_id`: Linear issue ID to review against
-- `files_changed`: List of files modified (or use `git diff --name-only`)
+- `files_changed`: List of files modified
+- `scenarios`: Gherkin scenario names from the issue
 
 ## Pass 1: Deterministic Compliance
 
-Run these checks and report actual tool output.
+Run these checks independently to verify /work's output. Report actual tool output.
 
 ### 1.1 Fetch Spec
 
@@ -46,13 +51,9 @@ Parse Gherkin scenarios from "Done When" section. Count them.
 
 ### 1.2 Test Coverage
 
-```bash
-# Find test files for this work
-grep -r "Scenario:" tests/ --include="*.py" --include="*.feature" | wc -l
-```
-
-Each Gherkin scenario MUST have a corresponding test. Map them:
-- Scenario name → test file:line
+For each Gherkin scenario, search for a corresponding test:
+- Use Grep to find test names matching scenario keywords
+- Map: Scenario name → test file:line
 
 **BLOCK if:** Any scenario has no corresponding test.
 
@@ -61,16 +62,12 @@ Each Gherkin scenario MUST have a corresponding test. Map them:
 Run based on proof type label:
 
 ```bash
-# proof:tdd
-pytest tests/ -v 2>&1
+# proof:tdd (Python/Django)
+/Users/yasharth/Code/current_backend/.venv/bin/python manage.py test <app>.tests --keepdb --noinput --verbosity=2 2>&1
 echo "EXIT_CODE:$?"
 
 # proof:rn-component
 npm test 2>&1
-echo "EXIT_CODE:$?"
-
-# proof:dbt-test
-dbt test --select <model> 2>&1
 echo "EXIT_CODE:$?"
 ```
 
@@ -93,52 +90,19 @@ Parse lines changed. Compare to label:
 
 ```bash
 # Python
-ruff check . 2>&1
+ruff check <changed_files> 2>&1
 echo "RUFF_EXIT:$?"
 
 # TypeScript/JS
-npx eslint . 2>&1
+npx eslint <changed_files> 2>&1
 echo "ESLINT_EXIT:$?"
 ```
 
 **BLOCK if:** Exit code != 0
 
-### 1.6 Type Check
-
-```bash
-# Python
-mypy src/ 2>&1
-echo "MYPY_EXIT:$?"
-
-# TypeScript
-npx tsc --noEmit 2>&1
-echo "TSC_EXIT:$?"
-```
-
-**BLOCK if:** Exit code != 0
-
-### 1.7 Dependencies
-
-```bash
-# Python
-uv pip list --outdated 2>/dev/null || pip list --outdated
-
-# Node
-npm outdated
-
-# dbt
-dbt deps
-```
-
-Parse output. Categorize:
-- **CRITICAL**: Major version behind OR known security vulnerability
-- **WARNING**: Minor/patch behind
-
-**BLOCK + ESCALATE if:** Critical dependency found. Ask human to approve update.
-
 ## Pass 2: LLM Quality Review
 
-Read the code and verify quality. These checks require judgment.
+Read the changed files and verify quality. These checks require judgment.
 
 ### 2.1 Spec Fidelity
 
@@ -151,9 +115,8 @@ For each Gherkin scenario:
 
 ### 2.2 Scope Creep
 
-1. Read the diff (`git diff`)
-2. Compare to Gherkin scenarios
-3. Flag any changes that aren't required by a scenario
+1. Read the changed files and compare to Gherkin scenarios
+2. Flag any changes that aren't required by a scenario
 
 **BLOCK if:** Significant unrequested changes found.
 
@@ -179,13 +142,32 @@ Every line of code is a liability. Check for:
 
 ### 2.5 Code Quality
 
-Check for:
-- Missing docstrings on public functions
-- Overly complex functions that are hard to follow
-- Duplicate code
-- Poor naming
+Check against CLAUDE.md standards. Concrete checks:
 
-**BLOCK if:** Quality issues that harm maintainability.
+**Import Hygiene:**
+- All imports MUST be at module level (no inline `import` inside functions) unless there is a verified circular dependency with a comment explaining why
+- Imports grouped per CLAUDE.md: stdlib → third-party → Django → other apps → local relative
+- No unused imports
+
+**Typing:**
+- Function signatures MUST have type annotations (`def func(x: int) -> bool:`)
+- Omissions acceptable only for Django overrides (e.g., `def save(self, ...)`)
+
+**Mock Path Correctness:**
+- When imports are at module level, `@patch` must target the lookup module (where the name is used), not the source module (where it's defined)
+- Example: if `views.py` does `from .services import foo`, patch `myapp.views.foo`, NOT `myapp.services.foo`
+
+**Error Handling:**
+- No bare `except:` clauses
+- `except Exception` only when wrapping + logging/re-raising as domain error
+- Never silently swallow exceptions
+
+**Naming & Style:**
+- Descriptive names (`extract_paths` > `data`)
+- Named kwargs for complex calls
+- TextChoices for enums, never string literals
+
+**BLOCK if:** Import hygiene violations (inline imports without justification, unused imports). Other issues → NEEDS_CHANGES.
 
 ### 2.6 Code Organization
 
@@ -218,11 +200,6 @@ Do NOT flag:
 - Tests: [PASS/FAIL] (exit [code])
 - Budget: [N] LOC ([label] threshold: [M]) [✓/✗]
 - Linter: [PASS/FAIL] (exit [code])
-- Types: [PASS/FAIL] (exit [code])
-
-**Dependencies**
-- [CRITICAL] [package] [current] → [latest] (reason)
-- [WARNING] [package] [current] → [latest]
 
 ### Pass 2: Quality
 
@@ -240,7 +217,11 @@ Do NOT flag:
 - [OK/ISSUE]: [observation]
 
 **Code Quality**
-- [OK/ISSUE]: [observation]
+- Import hygiene: [OK/ISSUE]
+- Typing: [OK/ISSUE]
+- Mock paths: [OK/N/A]
+- Error handling: [OK/ISSUE]
+- [Other observations]
 
 **Code Organization**
 - [OK/ISSUE]: [observation]
@@ -259,11 +240,12 @@ Do NOT flag:
 
 | Condition | Verdict |
 |-----------|---------|
-| All Pass 1 checks pass, all Pass 2 checks pass | APPROVE |
-| Any Pass 1 check fails (except critical deps) | NEEDS_CHANGES |
-| Any Pass 2 check fails | NEEDS_CHANGES |
+| All Pass 1 + Pass 2 checks pass | APPROVE |
+| Any Pass 1 check fails | NEEDS_CHANGES |
+| Missing test coverage for a scenario | NEEDS_CHANGES |
+| Import hygiene violations | NEEDS_CHANGES |
+| Any Pass 2 quality check fails | NEEDS_CHANGES |
 | Layer violation found | NEEDS_CHANGES |
-| Critical dependency found | BLOCKED_FOR_HUMAN |
 | Security issue found | BLOCKED_FOR_HUMAN |
 
 ## Integration

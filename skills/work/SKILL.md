@@ -401,6 +401,21 @@ Use `proof:manual` for tasks that require human judgment or execution against li
 4. Tests MUST PASS (GREEN)
 5. Report actual test output (exit code + summary)
 
+### Step 5b: Lint & Format
+
+Run the project linter/formatter on changed files:
+
+**Python:**
+1. `ruff check --fix <changed_files>` — auto-fix lint issues
+2. `ruff format <changed_files>` — format code
+3. If ruff reports unfixable errors, fix them manually before proceeding.
+
+**TypeScript/JS:**
+1. `npx eslint --fix <changed_files>`
+2. `npx prettier --write <changed_files>`
+
+Stage any formatting changes before proceeding to Step 6.
+
 ### Step 6: Verify Budget
 
 1. Run `git diff --stat` to count lines changed
@@ -463,13 +478,35 @@ Before proceeding to review, compile evidence that each scenario was actually te
 
 ### Step 9: Run Reviewer
 
-1. Launch the `reviewer` agent with the issue ID
-2. Wait for review verdict:
-   - **APPROVE** → proceed to summary
-   - **NEEDS_CHANGES** → fix issues, re-run reviewer
-   - **BLOCKED_FOR_HUMAN** → stop, report to human, wait for decision
+**MANDATORY — DO NOT SKIP THIS STEP.** Every work unit must be reviewed before completion, regardless of scope or complexity. Skipping review is a workflow violation.
 
-3. Max 3 review iterations. If still failing, escalate to human.
+**CRITICAL: Do NOT run the reviewer agent in the background.** It must run in the foreground because it needs interactive Bash tool approvals. Background execution will hang.
+
+Launch the `reviewer` agent with this prompt template (fill in the bracketed values):
+
+```
+Review the implementation for Linear issue [ISSUE_ID]: "[TITLE]".
+
+**Issue requirements (Gherkin scenarios):**
+[list scenario names from the issue]
+
+**Files changed:**
+[list files from git diff --name-only]
+
+**Standard quality checks (always verify):**
+- Import hygiene: all at module level, grouped per CLAUDE.md, no unused
+- Typing: function signatures annotated
+- Mock paths: target lookup module, not source module
+- No bare except without logging
+- CLAUDE.md adherence: Deep Modules, Data Contracts, Semantic Failures
+```
+
+Wait for review verdict:
+- **APPROVE** → proceed to Step 10
+- **NEEDS_CHANGES** → fix issues, re-run reviewer
+- **BLOCKED_FOR_HUMAN** → stop, report to human, wait for decision
+
+Max 3 review iterations. If still failing, escalate to human.
 
 ### Step 10: Post Completion Comment
 
